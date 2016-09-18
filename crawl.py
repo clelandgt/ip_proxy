@@ -21,13 +21,11 @@ class Crawl(object):
                 return self.parse(resp)
             except Exception as e:
                 # TODO: Instead of logging
-                sys.stdout.write('Exception:{0}'.format(str(e)))
+                sys.stdout.write('Exception:{0}\n'.format(str(e)))
             count = count + 1
 
     def run_get(self, url):
         # TODO: Have proxies
-        #proxies = self.get_proxies()
-        #return self.request.get(url=url, timeout=TIMEOUT, proxies=proxies)
         resp = self.request.get(url=url, timeout=TIMEOUT)
         if resp.status_code != 200:
             raise ValueError('response status is {0} not 200'.format(resp.status_code))

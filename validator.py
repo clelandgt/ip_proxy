@@ -1,4 +1,5 @@
 # coding:utf-8
+import sys
 import time
 import requests
 
@@ -14,24 +15,33 @@ class Validator(object):
         self.detect_pool = Pool(THREADNUM)
 
     def check_is_active(self, proxies):
+        sys.stdout.write('validator beginning -------\n')
         proxies = self.detect_pool.map(self.detect_list, proxies)
+        sys.stdout.write('validator end -------\n')
         return proxies
 
     def detect_list(self, proxy):
         ip = proxy['ip']
         port = proxy['port']
-        proxies = {"http": "http://%s:%s"%(ip,port)}
+        proxy_address = '{ip}:{port}'.format(
+            ip=ip,
+            port=port
+        )
+        proxies = {
+            'http': 'http://%s' % proxy_address,
+            # 'https': 'https://%s' % proxy_address,
+        }
         start = time.time()
         try:
             r = requests.get(url=TEST_URL, timeout=TIMEOUT, proxies=proxies)
             if not r.ok:
-                print 'fail ip =%s'%ip
+                sys.stdout.write('fail ip = {0}\n'.format(ip))
                 proxy = None
             else:
                 speed = round(time.time()-start, 2)
-                print 'success ip =%s,speed=%s' % (ip, speed)
                 proxy['speed'] = speed
-        except Exception as e:
-                print 'fail ip =%s' % ip
+                sys.stdout.write('success ip = {0}, speed = {1}\n'.format(ip, port))
+        except:
+                sys.stdout.write('fail ip = {0}\n'.format(ip))
                 proxy = None
         return proxy

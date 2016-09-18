@@ -4,7 +4,7 @@ import random
 
 THREADNUM = 20
 
-UPDATE_TIME = 10 * 60#每10分钟检测一次是否有代理ip失效
+UPDATE_TIME = 30 * 60#每30分钟检测一次是否有代理ip失效
 
 IPS_MINNUM = 1000 #当有效的ip值小于一个时 需要启动爬虫进行爬取
 
@@ -23,12 +23,12 @@ parserList = [
             'pattern': ".//*[@id='main']/div/div[1]/table/tr[position()>1]",
             'postion':{'ip': './td[1]', 'port': './td[2]', 'type': './td[4]', 'protocol': ''}
         },
-        # {
-        #     'urls': ['http://www.66ip.cn/areaindex_%s/%s.html'%(m,n) for m in range(1,35) for n in range(1,10)],
-        #     'type':'xpath',
-        #     'pattern': ".//*[@id='footer']/div/table/tr[position()>1]",
-        #     'postion':{'ip': './td[1]', 'port': './td[2]', 'type': './td[4]', 'protocol': ''}
-        # },
+        {
+            'urls': ['http://www.66ip.cn/areaindex_%s/%s.html'%(m,n) for m in range(1,35) for n in range(1,10)],
+            'type':'xpath',
+            'pattern': ".//*[@id='footer']/div/table/tr[position()>1]",
+            'postion':{'ip': './td[1]', 'port': './td[2]', 'type': './td[4]', 'protocol': ''}
+        },
         {
             'urls': ['http://www.kuaidaili.com/proxylist/%s/'% n for n in range(1,11)],
             'type': 'xpath',
