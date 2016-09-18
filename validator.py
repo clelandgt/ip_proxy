@@ -20,7 +20,7 @@ class Validator(object):
     def detect_list(self, proxy):
         ip = proxy['ip']
         port = proxy['port']
-        proxies={"http": "http://%s:%s"%(ip,port)}
+        proxies = {"http": "http://%s:%s"%(ip,port)}
         start = time.time()
         try:
             r = requests.get(url=TEST_URL, timeout=TIMEOUT, proxies=proxies)
@@ -28,10 +28,10 @@ class Validator(object):
                 print 'fail ip =%s'%ip
                 proxy = None
             else:
-                speed = round(time.time()-start,2)
-                print 'success ip =%s,speed=%s'%(ip,speed)
-                proxy['speed']=speed
+                speed = round(time.time()-start, 2)
+                print 'success ip =%s,speed=%s' % (ip, speed)
+                proxy['speed'] = speed
         except Exception as e:
-                print 'fail ip =%s'%ip
+                print 'fail ip =%s' % ip
                 proxy = None
         return proxy
