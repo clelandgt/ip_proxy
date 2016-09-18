@@ -1,9 +1,11 @@
 # coding:utf-8
 import sys
+import random
 import requests
 
 from lxml import etree
 from config import HEADER, RETRY_TIME, TIMEOUT
+from models import IpProxies
 
 
 class Crawl(object):
@@ -15,18 +17,25 @@ class Crawl(object):
     def run(self, url, parser):
         count = 0
         self.parser = parser
+        need_proxy = False
         while(count <= RETRY_TIME):
             try:
-                resp = self.run_get(url)
+                resp = self.run_get(url, need_proxy)
                 return self.parse(resp)
             except Exception as e:
                 # TODO: Instead of logging
                 sys.stdout.write('Exception:{0}\n'.format(str(e)))
+                need_proxy = True
             count = count + 1
 
-    def run_get(self, url):
+    def run_get(self, url, need_proxy):
         # TODO: Have proxies
-        resp = self.request.get(url=url, timeout=TIMEOUT)
+        if need_proxy:
+            proxy = random.choice(IpProxies.objects.all())
+            proxies = proxy.get_proxies()
+            resp = self.request.get(url=url, timeout=TIMEOUT, proxies=proxies, verify=False)
+        else:
+            resp = self.request.get(url=url, timeout=TIMEOUT)
         if resp.status_code != 200:
             raise ValueError('response status is {0} not 200'.format(resp.status_code))
         resp.encoding ='gbk'

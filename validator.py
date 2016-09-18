@@ -40,7 +40,7 @@ class Validator(object):
             else:
                 speed = round(time.time()-start, 2)
                 proxy['speed'] = speed
-                sys.stdout.write('success ip = {0}, speed = {1}\n'.format(ip, port))
+                sys.stdout.write('success ip = {ip}, port = {port}, speed = {speed}\n'.format(ip=ip, port=port, speed=speed))
         except:
                 sys.stdout.write('fail ip = {0}\n'.format(ip))
                 proxy = None

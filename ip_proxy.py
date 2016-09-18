@@ -2,6 +2,7 @@
 import sys
 import time
 import config
+import random
 
 from mongoengine import connect
 from gevent.pool import Pool
@@ -51,6 +52,7 @@ class IPProxy(object):
                 ip_proxies.extend(items)
         return ip_proxies
 
+    @classmethod
     def get_proxies(self, ip_type=IpProxies.ANONYMITY, lte_speed=5):
         results = IpProxies.objects.filter(ip_type=ip_type, lte_speed=lte_speed)
         ip_proxies = []
@@ -62,15 +64,18 @@ class IPProxy(object):
         existed_proxies = IpProxies.objects.all()
         new_proxies = self.distinct(proxies, existed_proxies)
         new_proxies = self.validator.check_is_active(new_proxies)
-        for item in new_proxies:
-            # TODO: save others
-            IpProxies(
-                ip=item['ip'],
-                port=item['port'],
-                ip_type=item['ip_type'],
-                protocol=item['protocol'],
-                speed=item['speed']
-            ).save()
+        try:
+            for item in new_proxies:
+                # TODO: save others
+                IpProxies(
+                    ip=item['ip'],
+                    port=item['port'],
+                    ip_type=item['ip_type'],
+                    # protocol=item['protocol'],
+                    speed=item['speed']
+                ).save()
+        except Exception as e:
+            sys.stdout.write('Exception:{0}'.format(str(e)))
 
     def distinct(self, new_items, items_db):
         result = []
