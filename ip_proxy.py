@@ -2,7 +2,6 @@
 import sys
 import time
 import config
-import random
 
 from mongoengine import connect
 from gevent.pool import Pool
@@ -17,7 +16,7 @@ class IPProxy(object):
     def __init__(self):
         connect(host='mongodb://localhost:27017/material', alias='material')
         self.validator = Validator()
-        self.crawl_pool = Pool(config.THREADNUM)
+        self.crawl_pool = Pool(config.CRAWL_THREADNUM)
 
     def run(self):
         while True:
@@ -28,6 +27,7 @@ class IPProxy(object):
                 self.delete_invaild_proxies(invalid_proxies)
                 if len(active_proxies) < config.IPS_MINNUM:
                     new_proxies = self.crawl()
+                    sys.stdout.write('crawl {0} ips \n'.format(len(new_proxies)))
                     self.import_proxies(new_proxies)
                     time.sleep(config.UPDATE_TIME)
             except Exception as e:
@@ -52,14 +52,6 @@ class IPProxy(object):
                 ip_proxies.extend(items)
         return ip_proxies
 
-    @classmethod
-    def get_proxies(self, ip_type=IpProxies.ANONYMITY, lte_speed=5):
-        results = IpProxies.objects.filter(ip_type=ip_type, lte_speed=lte_speed)
-        ip_proxies = []
-        for result in results:
-            ip_proxies.append(result.get_proxies)
-        return ip_proxies
-
     def import_proxies(self, proxies):
         existed_proxies = IpProxies.objects.all()
         new_proxies = self.distinct(proxies, existed_proxies)
@@ -74,7 +66,7 @@ class IPProxy(object):
                     speed=item['speed']
                 ).save()
             except Exception as e:
-                sys.stdout.write('Exception:{0}'.format(str(e)))
+                sys.stdout.write('Exception:{0}\n'.format(str(e)))
 
     def distinct(self, new_items, items_db):
         result = []

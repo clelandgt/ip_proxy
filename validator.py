@@ -4,15 +4,15 @@ import time
 import requests
 
 from gevent.pool import Pool
-from config import HEADER, TEST_URL, TIMEOUT, THREADNUM
+from config import HEADER, TEST_URL, VALIDATE_TIMEOUT, VALIDATE_THREADNUM
 
 
 class Validator(object):
     def __init__(self):
         self.request = requests.Session()
-        self.request.adapters.DEFAULT_RETRIES = 5
+        #self.request.adapters.DEFAULT_RETRIES = 5
         self.request.headers.update(HEADER)
-        self.detect_pool = Pool(THREADNUM)
+        self.detect_pool = Pool(VALIDATE_THREADNUM)
 
     def check_is_active(self, proxies):
         sys.stdout.write('validator beginning -------\n')
@@ -29,11 +29,11 @@ class Validator(object):
         )
         proxies = {
             'http': 'http://%s' % proxy_address,
-            # 'https': 'https://%s' % proxy_address,
+            'https': 'https://%s' % proxy_address,
         }
         start = time.time()
         try:
-            r = requests.get(url=TEST_URL, timeout=TIMEOUT, proxies=proxies)
+            r = requests.get(url=TEST_URL, timeout=VALIDATE_TIMEOUT, proxies=proxies)
             if not r.ok:
                 sys.stdout.write('fail ip = {0}\n'.format(ip))
                 proxy = None

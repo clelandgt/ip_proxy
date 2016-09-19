@@ -4,7 +4,7 @@ import random
 import requests
 
 from lxml import etree
-from config import HEADER, RETRY_TIME, TIMEOUT
+from config import HEADER, RETRY_TIME, CRAWL_TIMEOUT
 from models import IpProxies
 
 
@@ -29,13 +29,12 @@ class Crawl(object):
             count = count + 1
 
     def run_get(self, url, need_proxy):
-        # TODO: Have proxies
         if need_proxy:
             proxy = random.choice(IpProxies.objects.all())
             proxies = proxy.get_proxies()
-            resp = self.request.get(url=url, timeout=TIMEOUT, proxies=proxies, verify=False)
+            resp = self.request.get(url=url, timeout=CRAWL_TIMEOUT, proxies=proxies, verify=False)
         else:
-            resp = self.request.get(url=url, timeout=TIMEOUT)
+            resp = self.request.get(url=url, timeout=CRAWL_TIMEOUT)
         if resp.status_code != 200:
             raise ValueError('response status is {0} not 200'.format(resp.status_code))
         resp.encoding ='gbk'

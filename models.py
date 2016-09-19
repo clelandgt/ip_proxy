@@ -31,5 +31,5 @@ class IpProxies(Document):
         )
         return {
             'http': 'http://%s' % proxy_address,
-            # 'https': 'https://%s' % proxy_address,
+            'https': 'https://%s' % proxy_address,
         }
