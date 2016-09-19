@@ -64,18 +64,17 @@ class IPProxy(object):
         existed_proxies = IpProxies.objects.all()
         new_proxies = self.distinct(proxies, existed_proxies)
         new_proxies = self.validator.check_is_active(new_proxies)
-        try:
-            for item in new_proxies:
-                # TODO: save others
+        for item in new_proxies:
+            try:
                 IpProxies(
                     ip=item['ip'],
                     port=item['port'],
                     ip_type=item['ip_type'],
-                    # protocol=item['protocol'],
+                    protocol=item['protocol'],
                     speed=item['speed']
                 ).save()
-        except Exception as e:
-            sys.stdout.write('Exception:{0}'.format(str(e)))
+            except Exception as e:
+                sys.stdout.write('Exception:{0}'.format(str(e)))
 
     def distinct(self, new_items, items_db):
         result = []
