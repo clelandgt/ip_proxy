@@ -18,7 +18,7 @@ class IPProxy(object):
         self.connect_mongodb()
         self.config_logging()
         self.validator = Validator()
-        self.crawl_pool = Pool(config.CRAWL_THREADNUM)
+        self.crawl_pool = Pool(config.CRAWL_THREAD_NUM)
 
     def connect_mongodb(self):
         connect(host='mongodb://localhost:27017/material', alias='material')
@@ -32,7 +32,7 @@ class IPProxy(object):
         while True:
             try:
                 proxies = list(IpProxies.objects.all())
-                active_proxies = self.validator.check_is_active(proxies)
+                active_proxies = self.validator.run(proxies)
                 invalid_proxies = diff(proxies, active_proxies)
                 self.delete_invaild_proxies(invalid_proxies)
                 if len(active_proxies) < config.IPS_MINNUM:
@@ -65,7 +65,7 @@ class IPProxy(object):
     def import_proxies(self, proxies):
         existed_proxies = IpProxies.objects.all()
         new_proxies = self.distinct(proxies, existed_proxies)
-        new_proxies = self.validator.check_is_active(new_proxies)
+        new_proxies = self.validator.run(new_proxies)
         for item in new_proxies:
             try:
                 IpProxies(

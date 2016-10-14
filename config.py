@@ -1,12 +1,15 @@
 # coding:utf-8
 import random
+import multiprocessing
 
 # 配置爬取IP流程
-CRAWL_THREADNUM = 20
-CRAWL_TIMEOUT = 5
+VALIDATE_PROCESS_NUM = multiprocessing.cpu_count()
+CRAWL_THREAD_NUM = 20
+CRAWL_TIMEOUT = 10
 
 # 配置验证IP流程
-VALIDATE_THREADNUM = 50
+VALIDATE_PROCESS_NUM = multiprocessing.cpu_count()
+VALIDATE_THREAD_NUM = 100
 VALIDATE_TIMEOUT = 5
 
 

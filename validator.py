@@ -2,24 +2,49 @@
 import sys
 import time
 import requests
+import logging
 
+import config
+import multiprocessing
+from gevent import monkey
 from gevent.pool import Pool
-from config import HEADER, TEST_URL, VALIDATE_TIMEOUT, VALIDATE_THREADNUM
+monkey.patch_all()
+from config import HEADER, TEST_URL, VALIDATE_TIMEOUT
 
 
 class Validator(object):
     def __init__(self):
+        self.process_num = config.VALIDATE_PROCESS_NUM
+        self.thread_num = config.VALIDATE_THREAD_NUM
+        self.timeout = config.VALIDATE_TIMEOUT
         self.request = requests.Session()
         self.request.headers.update(HEADER)
-        self.detect_pool = Pool(VALIDATE_THREADNUM)
+        self.logger = logging.getLogger(__name__)
 
-    def check_is_active(self, proxies):
-        sys.stdout.write('validator beginning -------\n')
-        proxies = self.detect_pool.map(self.detect_list, proxies)
-        sys.stdout.write('validator end -------\n')
-        return proxies
+    def run(self, ips):
+        process = []
+        result_queue = multiprocessing.Queue()
+        self.logger.info('validate beginning -------\n')
+        piece = len(ips) / self.process_num + 1
+        for i in range(self.process_num):
+            ip_list = ips[piece*i:piece*(i+1)]
+            p = multiprocessing.Process(target=self.process_with_gevent, args=(ip_list, result_queue))
+            p.start()
+            process.append(p)
+        for p in process:
+            p.join()
+        result = []
+        for p in process:
+            result.extend(result_queue.get())
+        self.logger.info('validate end -------\n')
+        return result
 
-    def detect_list(self, proxy):
+    def process_with_gevent(self, ip_list, result_queue):
+        validate_pool = Pool(self.thread_num)
+        result = validate_pool.map(self.validate, ip_list)
+        result_queue.put(result)
+
+    def validate(self, proxy):
         ip = proxy['ip']
         port = proxy['port']
         proxy_address = '{ip}:{port}'.format(
