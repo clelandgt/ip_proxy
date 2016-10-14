@@ -10,7 +10,6 @@ from config import HEADER, TEST_URL, VALIDATE_TIMEOUT, VALIDATE_THREADNUM
 class Validator(object):
     def __init__(self):
         self.request = requests.Session()
-        #self.request.adapters.DEFAULT_RETRIES = 5
         self.request.headers.update(HEADER)
         self.detect_pool = Pool(VALIDATE_THREADNUM)
 

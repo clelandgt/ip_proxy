@@ -1,24 +1,24 @@
 # coding:utf-8
 import random
 
-
+# 配置爬取IP流程
 CRAWL_THREADNUM = 20
+CRAWL_TIMEOUT = 5
 
+# 配置验证IP流程
 VALIDATE_THREADNUM = 50
+VALIDATE_TIMEOUT = 5
+
 
 UPDATE_TIME = 30 * 60
 
 IPS_MINNUM = 100
 
-CRAWL_TIMEOUT = 5
-
-VALIDATE_TIMEOUT = 2
-
-RETRY_TIME = 5
-
 TEST_URL = 'https://www.baidu.com/'
 
-parserList = [
+LOGGING_FILE = 'ip_proxy.log'
+
+PARSER_LIST = [
         {
             'urls': ['http://www.66ip.cn/%s.html'% n for n in ['index']+range(2, 5)],
             'type':'xpath',

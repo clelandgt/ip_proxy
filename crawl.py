@@ -1,43 +1,40 @@
 # coding:utf-8
-import sys
 import random
 import requests
-
+import logging
 from lxml import etree
-from config import HEADER, RETRY_TIME, CRAWL_TIMEOUT
+from config import HEADER, CRAWL_TIMEOUT
 from models import IpProxies
 
 
 class Crawl(object):
     def __init__(self):
+        self.parser = None
         self.request = requests.Session()
-        self.request.adapters.DEFAULT_RETRIES = 5
         self.request.headers.update(HEADER)
+        self.request.adapters.DEFAULT_RETRIES = 5
+        self.logger = logging.getLogger(__name__)
 
     def run(self, url, parser):
-        count = 0
-        self.parser = parser
-        need_proxy = False
-        while(count <= RETRY_TIME):
-            try:
-                resp = self.run_get(url, need_proxy)
-                return self.parse(resp)
-            except Exception as e:
-                # TODO: Instead of logging
-                sys.stdout.write('Exception:{0}\n'.format(str(e)))
-                need_proxy = True
-            count = count + 1
+        try:
+            self.parser = parser
+            resp = self.down_load(url)
+            return self.parse(resp)
+        except Exception as e:
+            self.logger.error(str(e))
 
-    def run_get(self, url, need_proxy):
-        if need_proxy:
-            proxy = random.choice(IpProxies.objects.all())
-            proxies = proxy.get_proxies()
-            resp = self.request.get(url=url, timeout=CRAWL_TIMEOUT, proxies=proxies, verify=False)
-        else:
+    def down_load(self, url):
+        try:
             resp = self.request.get(url=url, timeout=CRAWL_TIMEOUT)
-        if resp.status_code != 200:
-            raise ValueError('response status is {0} not 200'.format(resp.status_code))
-        resp.encoding ='gbk'
+            if not resp.ok:
+                raise
+        except Exception as e:
+            # TODO: detailed exception of get method
+            proxies = random.choice(IpProxies.objects.all()).get_proxies()
+            resp = self.request.get(url=url, timeout=CRAWL_TIMEOUT,
+                                    proxies=proxies, verify=False)
+            self.logger.error(str(e))
+        resp.encoding = 'gbk'
         return resp.text
 
     def parse(self, resp):
@@ -72,5 +69,4 @@ class Crawl(object):
                 'speed': 100
             }
             proxylist.append(proxy)
-
         return proxylist

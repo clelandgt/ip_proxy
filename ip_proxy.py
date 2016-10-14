@@ -1,11 +1,12 @@
 # coding:utf-8
 import sys
 import time
+import logging
 import config
 
 from mongoengine import connect
 from gevent.pool import Pool
-from config import parserList
+from config import PARSER_LIST
 from models import IpProxies
 from crawl import Crawl
 from validator import Validator
@@ -14,9 +15,18 @@ from utils import diff
 
 class IPProxy(object):
     def __init__(self):
-        connect(host='mongodb://localhost:27017/material', alias='material')
+        self.connect_mongodb()
+        self.config_logging()
         self.validator = Validator()
         self.crawl_pool = Pool(config.CRAWL_THREADNUM)
+
+    def connect_mongodb(self):
+        connect(host='mongodb://localhost:27017/material', alias='material')
+
+    def config_logging(self):
+        logging.basicConfig(filename=config.LOGGING_FILE, level=logging.INFO,
+                            format='%(asctime)s %(levelname)s \n\t\t%(message)s',
+                            datefmt='%Y.%m.%d  %H:%M:%S')
 
     def run(self):
         while True:
@@ -36,7 +46,7 @@ class IPProxy(object):
     def crawl(self):
         proxies = []
         sys.stdout.write('crawl beginning -------\n')
-        results = self.crawl_pool.map(self._crawl, parserList)
+        results = self.crawl_pool.map(self._crawl, PARSER_LIST)
         for result in results:
             proxies.extend(result)
         sys.stdout.write('crawl end -------\n')
