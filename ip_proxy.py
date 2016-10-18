@@ -1,5 +1,4 @@
 # coding:utf-8
-import sys
 import time
 import logging
 import config
@@ -19,44 +18,58 @@ class IPProxy(object):
         self.config_logging()
         self.validator = Validator()
         self.crawl_pool = Pool(config.CRAWL_THREAD_NUM)
+        self.logger = logging.getLogger(__name__)
 
     def connect_mongodb(self):
         connect(host='mongodb://localhost:27017/material', alias='material')
 
     def config_logging(self):
-        logging.basicConfig(filename=config.LOGGING_FILE, level=logging.INFO,
+        logging.basicConfig(filename=config.LOGGING_FILE, level=logging.DEBUG,
                             format='%(asctime)s %(levelname)s \n\t\t%(message)s',
                             datefmt='%Y.%m.%d  %H:%M:%S')
+        console = logging.StreamHandler()
+        console.setLevel(logging.INFO)
+        self.logger = logging.getLogger(__name__)
+        self.logger.addHandler(console)
 
     def run(self):
         while True:
             try:
                 proxies = list(IpProxies.objects.all())
-                active_proxies = self.validator.run(proxies)
+                active_proxies = self.validate(proxies)
                 invalid_proxies = diff(proxies, active_proxies)
                 self.delete_invaild_proxies(invalid_proxies)
-                if len(active_proxies) < config.IPS_MINNUM:
+                if len(active_proxies) < config.IPS_MIN_NUM:
                     new_proxies = self.crawl()
-                    sys.stdout.write('crawl {0} ips \n'.format(len(new_proxies)))
+                    self.logger.info('crawl {0} ips \n'.format(len(new_proxies)))
                     self.import_proxies(new_proxies)
                     time.sleep(config.UPDATE_TIME)
             except Exception as e:
-                sys.stdout.write('Exception:{0}'.format(str(e)))
+                self.logger.error(str(e))
+
+    def validate(self, proxies):
+        start_time = time.time()
+        self.logger.info('{0} proxies need validate -------\n'.format(len(proxies)))
+        proxies = self.validator.run(proxies)
+        end_time = time.time()
+        self.logger.info('validate end -------\n')
+        self.logger.info('{0} proxies, spend {1}s\n'.format(len(proxies), start_time-end_time))
+        return proxies
 
     def crawl(self):
         proxies = []
-        sys.stdout.write('crawl beginning -------\n')
+        self.logger.info('crawl beginning -------\n')
         results = self.crawl_pool.map(self._crawl, PARSER_LIST)
         for result in results:
             proxies.extend(result)
-        sys.stdout.write('crawl end -------\n')
+        self.logger.info('crawl end -------\n')
         return proxies
 
     def _crawl(self, parser):
         ip_proxies = []
         crawl = Crawl()
         for url in parser['urls']:
-            sys.stdout.write('crawl {0}\n'.format(url))
+            self.logger.info('crawl {0}\n'.format(url))
             items = crawl.run(url, parser)
             if items != None:
                 ip_proxies.extend(items)
@@ -66,17 +79,20 @@ class IPProxy(object):
         existed_proxies = IpProxies.objects.all()
         new_proxies = self.distinct(proxies, existed_proxies)
         new_proxies = self.validator.run(new_proxies)
-        for item in new_proxies:
+        proxies = [proxy for proxy in new_proxies if proxy is not None]
+        for proxy in proxies:
             try:
                 IpProxies(
-                    ip=item['ip'],
-                    port=item['port'],
-                    ip_type=item['ip_type'],
-                    protocol=item['protocol'],
-                    speed=item['speed']
+                    ip=proxy['ip'],
+                    port=proxy['port'],
+                    ip_type=proxy['ip_type'],
+                    protocol=proxy['protocol'],
+                    speed=proxy['speed']
                 ).save()
             except Exception as e:
-                sys.stdout.write('Exception:{0}\n'.format(str(e)))
+                self.logger.error('Exception:{0}\n'.format(str(e)))
+        self.logger.info('import {0} proxies, now have proxies {1} in database'.
+                         format(len(proxies), len(IpProxies.objects.all())))
 
     def distinct(self, new_items, items_db):
         result = []
@@ -89,10 +105,10 @@ class IPProxy(object):
         for proxy in proxies:
             try:
                 item = IpProxies.objects.get(ip=proxy['ip'], port=proxy['port'])
-                sys.stdout.write('delete invalid ip: {0}\n'.format(proxy['ip']))
+                self.logger.info('delete invalid ip: {0}\n'.format(proxy['ip']))
                 item.delete()
-            except:
-                pass
+            except Exception as e:
+                self.logger.error(str(e))
 
 
 def main():

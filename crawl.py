@@ -18,12 +18,12 @@ class Crawl(object):
     def run(self, url, parser):
         try:
             self.parser = parser
-            resp = self.down_load(url)
+            resp = self.download(url)
             return self.parse(resp)
         except Exception as e:
             self.logger.error(str(e))
 
-    def down_load(self, url):
+    def download(self, url):
         try:
             resp = self.request.get(url=url, timeout=CRAWL_TIMEOUT)
             if not resp.ok:

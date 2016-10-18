@@ -1,5 +1,4 @@
-# coding:utf-8
-import sys
+# coding:utf-
 import time
 import requests
 import logging
@@ -9,6 +8,7 @@ import multiprocessing
 from gevent import monkey
 from gevent.pool import Pool
 monkey.patch_all()
+from requests.exceptions import RequestException
 from config import HEADER, TEST_URL, VALIDATE_TIMEOUT
 
 
@@ -19,12 +19,14 @@ class Validator(object):
         self.timeout = config.VALIDATE_TIMEOUT
         self.request = requests.Session()
         self.request.headers.update(HEADER)
+        console = logging.StreamHandler()
+        console.setLevel(logging.INFO)
         self.logger = logging.getLogger(__name__)
+        self.logger.addHandler(console)
 
     def run(self, ips):
         process = []
         result_queue = multiprocessing.Queue()
-        self.logger.info('validate beginning -------\n')
         piece = len(ips) / self.process_num + 1
         for i in range(self.process_num):
             ip_list = ips[piece*i:piece*(i+1)]
@@ -36,7 +38,6 @@ class Validator(object):
         result = []
         for p in process:
             result.extend(result_queue.get())
-        self.logger.info('validate end -------\n')
         return result
 
     def process_with_gevent(self, ip_list, result_queue):
@@ -57,15 +58,17 @@ class Validator(object):
         }
         start = time.time()
         try:
-            r = requests.get(url=TEST_URL, timeout=VALIDATE_TIMEOUT, proxies=proxies)
-            if not r.ok:
-                sys.stdout.write('fail ip = {0}\n'.format(ip))
-                proxy = None
-            else:
-                speed = round(time.time()-start, 2)
-                proxy['speed'] = speed
-                sys.stdout.write('success ip = {ip}, port = {port}, speed = {speed}\n'.format(ip=ip, port=port, speed=speed))
-        except:
-                sys.stdout.write('fail ip = {0}\n'.format(ip))
-                proxy = None
+            resp = requests.get(url=TEST_URL, timeout=VALIDATE_TIMEOUT, proxies=proxies)
+            if not resp.ok:
+                raise RequestException
+        except RequestException:
+            self.logger.warning('fail ip = {0}\n'.format(ip))
+            return
+        except Exception as e:
+            self.logger.error(str(e))
+            return
+        else:
+            speed = round(time.time()-start, 2)
+            proxy['speed'] = speed
+            self.logger.info('success ip = {ip}, port = {port}, speed = {speed}\n'.format(ip=ip, port=port, speed=speed))
         return proxy

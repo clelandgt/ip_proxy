@@ -15,7 +15,7 @@ VALIDATE_TIMEOUT = 5
 
 UPDATE_TIME = 30 * 60
 
-IPS_MINNUM = 100
+IPS_MIN_NUM = 100
 
 TEST_URL = 'https://www.baidu.com/'
 
@@ -35,13 +35,13 @@ PARSER_LIST = [
             'postion':{'ip': './td[1]', 'port': './td[2]', 'type': './td[4]', 'protocol': ''}
         },
         {
-            'urls': ['http://www.kuaidaili.com/proxylist/%s/' % n for n in range(1, 5)],
+            'urls': ['http://www.kuaidaili.com/proxylist/%s/' % n for n in range(1, 10)],
             'type': 'xpath',
             'pattern': ".//*[@id='index_free_list']/table/tbody/tr[position()>0]",
             'postion':{'ip': './td[1]', 'port': './td[2]', 'type': './td[3]', 'protocol': './td[4]'}
         },
         {
-            'urls': ['http://www.kuaidaili.com/free/%s/%s/' % (m, n) for m in ['inha', 'intr', 'outha', 'outtr'] for n in range(1, 5)],
+            'urls': ['http://www.kuaidaili.com/free/%s/%s/' % (m, n) for m in ['inha', 'intr', 'outha', 'outtr'] for n in range(1, 10)],
             'type':'xpath',
             'pattern': ".//*[@id='list']/table/tbody/tr[position()>0]",
             'postion':{'ip': './td[1]', 'port': './td[2]', 'type': './td[3]', 'protocol': './td[4]'}
