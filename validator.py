@@ -18,6 +18,7 @@ class Validator(object):
         self.thread_num = config.VALIDATE_THREAD_NUM
         self.timeout = config.VALIDATE_TIMEOUT
         self.request = requests.Session()
+        self.request.adapters.DEFAULT_RETRIES = 2
         self.request.headers.update(HEADER)
         console = logging.StreamHandler()
         console.setLevel(logging.INFO)
@@ -58,7 +59,7 @@ class Validator(object):
         }
         start = time.time()
         try:
-            resp = requests.get(url=TEST_URL, timeout=VALIDATE_TIMEOUT, proxies=proxies)
+            resp = requests.get(url=TEST_URL, timeout=VALIDATE_TIMEOUT, proxies=proxies, verify=False)
             if not resp.ok:
                 raise RequestException
         except RequestException:

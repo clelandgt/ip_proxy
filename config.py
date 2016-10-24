@@ -10,7 +10,15 @@ CRAWL_TIMEOUT = 10
 # 配置验证IP流程
 VALIDATE_PROCESS_NUM = multiprocessing.cpu_count()
 VALIDATE_THREAD_NUM = 100
-VALIDATE_TIMEOUT = 5
+VALIDATE_TIMEOUT = 8
+
+# 免费代理
+FREE_PROXY = False
+
+# 付费代理(有代理)
+PAID_PROXY = True
+PAID_PROXY_API = ''
+INTERVAL_CALL_PAID_API = 5 * 60 # 5分钟请求一次api, 并验证数据库中的ip
 
 
 UPDATE_TIME = 30 * 60

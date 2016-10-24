@@ -5,15 +5,13 @@ from mongoengine import IntField, StringField, DateTimeField, FloatField
 
 
 class IpProxies(Document):
-    (HIGH_ANONYMITY, ANONYMITY) = range(0, 2)
-    (HTTP, HTTPS) = range(0, 2)
-    is_ANONYMITY = (HIGH_ANONYMITY, ANONYMITY)
-    types = (HTTP, HTTPS)
+    TYPE_CHOICES = (u'高匿', u'匿名')
+    PRO_CHOICES = ('HTTP', 'HTTPS')
 
     ip = StringField(required=True, unique=True)
     port = IntField(required=True,)
-    ip_type = IntField(choices=is_ANONYMITY, default=HIGH_ANONYMITY)
-    protocol = IntField(choices=types, default=HTTP)
+    ip_type = StringField(choices=TYPE_CHOICES, default=u'匿名')
+    protocol = StringField(choices=PRO_CHOICES, default='HTTP')
     speed = FloatField()
     creation_date = DateTimeField()
     update_date = DateTimeField()
