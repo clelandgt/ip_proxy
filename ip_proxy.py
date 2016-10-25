@@ -1,9 +1,7 @@
 # coding:utf-8
-import json
 import time
 import logging
 import config
-import requests
 
 from mongoengine import connect
 from gevent.pool import Pool
@@ -34,7 +32,7 @@ class IPProxy(object):
         self.logger = logging.getLogger(__name__)
         self.logger.addHandler(console)
 
-    def run_with_free_proxy(self):
+    def run(self):
         while True:
             try:
                 proxies = list(IpProxies.objects.all())
@@ -48,45 +46,6 @@ class IPProxy(object):
                     time.sleep(config.UPDATE_TIME)
             except Exception as e:
                 self.logger.error(str(e))
-
-    def run_with_paid_proxy(self):
-        while True:
-            try:
-                proxies = list(IpProxies.objects.all())
-                active_proxies = self.validate(proxies)
-                invalid_proxies = diff(proxies, active_proxies)
-                self.delete_invaild_proxies(invalid_proxies)
-                new_proxies = self._get_paid_proxies()
-                self.import_proxies(new_proxies)
-                time.sleep(config.INTERVAL_CALL_PAID_API)
-            except Exception as e:
-                self.logger.error(str(e))
-
-    def _get_paid_proxies(self):
-        proxies = []
-        request = requests.session()
-        url = config.PAID_PROXY_API
-        resp = request.get(url)
-        resp_json = json.loads(resp.text)
-        proxy_list = resp_json['data']['proxy_list']
-        for item in proxy_list:
-            item = item.strip()
-            collist = item.split(',')
-            ip, port = collist[0].split(':')
-            ip_type = None
-            if u'高匿' in collist[1]:
-                ip_type = u'高匿'
-            ip_protocol = collist[2]
-            speed = collist[3]
-            proxy = {
-                'ip': ip,
-                'port': port,
-                'ip_type': ip_type,
-                'protocol': ip_protocol,
-                'speed': speed
-            }
-            proxies.append(proxy)
-        return proxies
 
     def validate(self, proxies):
         start_time = time.time()
@@ -117,10 +76,7 @@ class IPProxy(object):
         return ip_proxies
 
     def import_proxies(self, proxies):
-        existed_proxies = IpProxies.objects.all()
-        new_proxies = self.distinct(proxies, existed_proxies)
-        new_proxies = self.validator.run(new_proxies)
-        proxies = [proxy for proxy in new_proxies if proxy is not None]
+        proxies = self.validator.run(proxies)
         for proxy in proxies:
             try:
                 IpProxies(
@@ -128,7 +84,7 @@ class IPProxy(object):
                     port=proxy['port'],
                     ip_type=proxy['ip_type'],
                     protocol=proxy['protocol'],
-                    speed=proxy['speed']
+                    speeds=proxy['speeds']
                 ).save()
             except Exception as e:
                 self.logger.error('Exception:{0}\n'.format(str(e)))
@@ -154,10 +110,7 @@ class IPProxy(object):
 
 def main():
     ip_proxy = IPProxy()
-    if config.FREE_PROXY:
-        ip_proxy.run_with_free_proxy()
-    if config.PAID_PROXY:
-        ip_proxy.run_with_paid_proxy()
+    ip_proxy.run()
 
 
 if __name__ == '__main__':

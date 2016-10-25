@@ -18,7 +18,7 @@ class Validator(object):
         self.thread_num = config.VALIDATE_THREAD_NUM
         self.timeout = config.VALIDATE_TIMEOUT
         self.request = requests.Session()
-        self.request.adapters.DEFAULT_RETRIES = 2
+        self.request.adapters.DEFAULT_RETRIES = 5
         self.request.headers.update(HEADER)
         console = logging.StreamHandler()
         console.setLevel(logging.INFO)
@@ -36,26 +36,24 @@ class Validator(object):
             process.append(p)
         for p in process:
             p.join()
-        result = []
+        results = []
         for p in process:
-            result.extend(result_queue.get())
-        return result
+            results.extend(result_queue.get())
+        results = [result for result in results if result is not None]
+        return results
 
     def process_with_gevent(self, ip_list, result_queue):
         validate_pool = Pool(self.thread_num)
-        result = validate_pool.map(self.validate, ip_list)
-        result_queue.put(result)
+        results = validate_pool.map(self.validate, ip_list)
+        result_queue.put(results)
 
-    def validate(self, proxy):
-        ip = proxy['ip']
-        port = proxy['port']
-        proxy_address = '{ip}:{port}'.format(
-            ip=ip,
-            port=port
-        )
+    def validate(self, ip_obj):
+        ip = ip_obj['ip']
+        port = ip_obj['port']
+        proxy_addr = '{ip}:{port}'.format(ip=ip, port=port)
         proxies = {
-            'http': 'http://%s' % proxy_address,
-            'https': 'https://%s' % proxy_address,
+            'http': 'http://%s' % proxy_addr,
+            'https': 'https://%s' % proxy_addr,
         }
         start = time.time()
         try:
@@ -64,12 +62,16 @@ class Validator(object):
                 raise RequestException
         except RequestException:
             self.logger.warning('fail ip = {0}\n'.format(ip))
-            return
+            if len(ip_obj['speeds']) != 0:
+                ip_obj['speeds'].append(0.0)
+                return ip_obj
+            else:
+                return
         except Exception as e:
             self.logger.error(str(e))
             return
         else:
             speed = round(time.time()-start, 2)
-            proxy['speed'] = speed
+            ip_obj['speeds'].append(speed)
             self.logger.info('success ip = {ip}, port = {port}, speed = {speed}\n'.format(ip=ip, port=port, speed=speed))
-        return proxy
+        return ip_obj

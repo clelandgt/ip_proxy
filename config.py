@@ -12,18 +12,9 @@ VALIDATE_PROCESS_NUM = multiprocessing.cpu_count()
 VALIDATE_THREAD_NUM = 100
 VALIDATE_TIMEOUT = 8
 
-# 免费代理
-FREE_PROXY = False
+UPDATE_TIME = 2 * 60
 
-# 付费代理(有代理)
-PAID_PROXY = True
-PAID_PROXY_API = ''
-INTERVAL_CALL_PAID_API = 5 * 60 # 5分钟请求一次api, 并验证数据库中的ip
-
-
-UPDATE_TIME = 30 * 60
-
-IPS_MIN_NUM = 100
+IPS_MIN_NUM = 5
 
 TEST_URL = 'https://www.baidu.com/'
 
@@ -69,7 +60,7 @@ PARSER_LIST = [
 
         },
         {
-            'urls': ['http://www.xicidaili.com/nn/%s' % n for n in range(1, 5)],
+            'urls': ['http://www.xicidaili.com/nn/%s' % n for n in range(1, 2)],
             'type':'xpath',
             'pattern': ".//*[@id='ip_list']/tr[position()>1]",
             'postion': {'ip': './td[2]', 'port': './td[3]', 'type': './td[5]', 'protocol': './td[6]'}

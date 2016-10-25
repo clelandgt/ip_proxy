@@ -49,24 +49,24 @@ class Crawl(object):
             port = proxy.xpath(parser['postion']['port'])[0].text
             type = proxy.xpath(parser['postion']['type'])[0].text
             if type.find(u'高匿') != -1:
-                type = 0
+                type = '高匿'
             else:
-                type = 1
+                type = '匿名'
             if len(parser['postion']['protocol']) > 0:
                 protocol = proxy.xpath(parser['postion']['protocol'])[0].text
                 if protocol.lower().find('https') != -1:
-                    protocol = 1
+                    protocol = 'HTTP'
                 else:
-                    protocol = 0
+                    protocol = 'HTTPS'
             else:
-                protocol = 0
+                protocol = 'HTTPS'
 
             proxy = {
                 'ip': ip,
                 'port': int(port),
-                'ip_type': int(type),
-                'protocol': int(protocol),
-                'speed': 100
+                'ip_type': type,
+                'protocol': protocol,
+                'speeds': []
             }
             proxylist.append(proxy)
         return proxylist

@@ -1,7 +1,7 @@
 # coding:utf-8
 import datetime
 from mongoengine import Document
-from mongoengine import IntField, StringField, DateTimeField, FloatField
+from mongoengine import IntField, StringField, DateTimeField, FloatField, ListField
 
 
 class IpProxies(Document):
@@ -12,7 +12,7 @@ class IpProxies(Document):
     port = IntField(required=True,)
     ip_type = StringField(choices=TYPE_CHOICES, default=u'匿名')
     protocol = StringField(choices=PRO_CHOICES, default='HTTP')
-    speed = FloatField()
+    speeds = ListField(FloatField())
     creation_date = DateTimeField()
     update_date = DateTimeField()
     meta = {"db_alias": "material"}
