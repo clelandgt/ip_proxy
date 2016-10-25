@@ -11,6 +11,10 @@ CRAWL_TIMEOUT = 10
 VALIDATE_PROCESS_NUM = multiprocessing.cpu_count()
 VALIDATE_THREAD_NUM = 100
 VALIDATE_TIMEOUT = 8
+CONT_FAIL_TIMES = 3
+FAIL_RATE_LIMIT = 0.5
+ON_FAIL_RATE_TIMES = 10
+
 
 UPDATE_TIME = 2 * 60
 
@@ -60,7 +64,7 @@ PARSER_LIST = [
 
         },
         {
-            'urls': ['http://www.xicidaili.com/nn/%s' % n for n in range(1, 2)],
+            'urls': ['http://www.xicidaili.com/nn/%s' % n for n in range(1, 5)],
             'type':'xpath',
             'pattern': ".//*[@id='ip_list']/tr[position()>1]",
             'postion': {'ip': './td[2]', 'port': './td[3]', 'type': './td[5]', 'protocol': './td[6]'}

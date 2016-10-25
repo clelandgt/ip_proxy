@@ -9,7 +9,6 @@ from config import PARSER_LIST
 from models import IpProxies
 from crawl import Crawl
 from validator import Validator
-from utils import diff
 
 
 class IPProxy(object):
@@ -34,26 +33,28 @@ class IPProxy(object):
 
     def run(self):
         while True:
-            try:
-                proxies = list(IpProxies.objects.all())
-                active_proxies = self.validate(proxies)
-                invalid_proxies = diff(proxies, active_proxies)
-                self.delete_invaild_proxies(invalid_proxies)
-                if len(active_proxies) < config.IPS_MIN_NUM:
+            # try:
+                proxies = IpProxies.objects.all()
+                self.validate(proxies)
+                proxies = IpProxies.objects.all()
+                if proxies.count() < config.IPS_MIN_NUM:
                     new_proxies = self.crawl()
+                    if not new_proxies:
+                        new_proxies = []
                     self.logger.info('crawl {0} ips \n'.format(len(new_proxies)))
-                    self.import_proxies(new_proxies)
+                    self.validate(new_proxies)
                     time.sleep(config.UPDATE_TIME)
-            except Exception as e:
-                self.logger.error(str(e))
+            # except Exception as e:
+            #     self.logger.error(str(e))
 
     def validate(self, proxies):
+        proxies_len = len(proxies)
         start_time = time.time()
-        self.logger.info('{0} proxies need validate -------\n'.format(len(proxies)))
-        proxies = self.validator.run(proxies)
+        self.logger.info('{0} proxies need validate -------\n'.format(proxies_len))
+        self.validator.run(proxies)
         end_time = time.time()
         self.logger.info('validate end -------\n')
-        self.logger.info('{0} proxies, spend {1}s\n'.format(len(proxies), end_time-start_time))
+        self.logger.info('{0} proxies, spend {1}s\n'.format(proxies_len, end_time-start_time))
         return proxies
 
     def crawl(self):
@@ -74,38 +75,6 @@ class IPProxy(object):
             if items != None:
                 ip_proxies.extend(items)
         return ip_proxies
-
-    def import_proxies(self, proxies):
-        proxies = self.validator.run(proxies)
-        for proxy in proxies:
-            try:
-                IpProxies(
-                    ip=proxy['ip'],
-                    port=proxy['port'],
-                    ip_type=proxy['ip_type'],
-                    protocol=proxy['protocol'],
-                    speeds=proxy['speeds']
-                ).save()
-            except Exception as e:
-                self.logger.error('Exception:{0}\n'.format(str(e)))
-        self.logger.info('import {0} proxies, now have proxies {1} in database'.
-                         format(len(proxies), len(IpProxies.objects.all())))
-
-    def distinct(self, new_items, items_db):
-        result = []
-        for item in new_items:
-            if (item not in items_db) and (item not in result):
-                result.append(item)
-        return result
-
-    def delete_invaild_proxies(self, proxies):
-        for proxy in proxies:
-            try:
-                item = IpProxies.objects.get(ip=proxy['ip'], port=proxy['port'])
-                self.logger.info('delete invalid ip: {0}\n'.format(proxy['ip']))
-                item.delete()
-            except Exception as e:
-                self.logger.error(str(e))
 
 
 def main():
