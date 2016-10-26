@@ -16,9 +16,9 @@ FAIL_RATE_LIMIT = 0.5
 ON_FAIL_RATE_TIMES = 10
 
 
-UPDATE_TIME = 2 * 60
+UPDATE_TIME = 5 * 60
 
-IPS_MIN_NUM = 5
+IPS_MIN_NUM = 200
 
 TEST_URL = 'https://www.baidu.com/'
 

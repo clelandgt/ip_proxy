@@ -33,7 +33,7 @@ class IPProxy(object):
 
     def run(self):
         while True:
-            # try:
+            try:
                 proxies = IpProxies.objects.all()
                 self.validate(proxies)
                 proxies = IpProxies.objects.all()
@@ -43,9 +43,9 @@ class IPProxy(object):
                         new_proxies = []
                     self.logger.info('crawl {0} ips \n'.format(len(new_proxies)))
                     self.validate(new_proxies)
-                    time.sleep(config.UPDATE_TIME)
-            # except Exception as e:
-            #     self.logger.error(str(e))
+                time.sleep(config.UPDATE_TIME)
+            except Exception as e:
+                self.logger.error(str(e))
 
     def validate(self, proxies):
         proxies_len = len(proxies)

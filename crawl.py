@@ -3,6 +3,7 @@ import random
 import requests
 import logging
 from lxml import etree
+from requests.exceptions import RequestException
 from config import HEADER, CRAWL_TIMEOUT
 from models import IpProxies
 
@@ -29,11 +30,13 @@ class Crawl(object):
             if not resp.ok:
                 raise
         except Exception as e:
-            # TODO: detailed exception of get method
-            proxies = random.choice(IpProxies.objects.all()).get_proxies()
-            resp = self.request.get(url=url, timeout=CRAWL_TIMEOUT,
-                                    proxies=proxies, verify=False)
-            self.logger.error(str(e))
+            self.logger.error('crawl failed, exception: {0}'.format(str(e)))
+            try:
+                proxies = random.choice(IpProxies.objects.all()).get_proxies()
+                resp = self.request.get(url=url, timeout=CRAWL_TIMEOUT,
+                                        proxies=proxies, verify=False)
+            except Exception as e:
+                self.logger.error('crawl failed, exception: {0}'.format(str(e)))
         resp.encoding = 'gbk'
         return resp.text
 
