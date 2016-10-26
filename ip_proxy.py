@@ -76,6 +76,18 @@ class IPProxy(object):
                 ip_proxies.extend(items)
         return ip_proxies
 
+    def get_proxy(self, count=None):
+        proxies = []
+        proxy_objs = IpProxies.objects.all()
+        if config.DEGUG:
+            for proxy_obj in proxy_objs:
+                proxies.append(proxy_obj.to_json())
+        else:
+            for proxy_obj in proxy_objs:
+                ip_addr = '{ip}:{port}'.format(ip=proxy_obj['ip'], port=proxy_obj['port'])
+                proxies.append(ip_addr)
+        return proxies[:count]
+
 
 def main():
     ip_proxy = IPProxy()

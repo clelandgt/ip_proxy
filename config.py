@@ -2,8 +2,10 @@
 import random
 import multiprocessing
 
+DEGUG = False
+
 # 配置爬取IP流程
-VALIDATE_PROCESS_NUM = multiprocessing.cpu_count()
+CRAWL_PROCESS_NUM = multiprocessing.cpu_count()
 CRAWL_THREAD_NUM = 20
 CRAWL_TIMEOUT = 10
 
@@ -18,7 +20,7 @@ ON_FAIL_RATE_TIMES = 10
 
 UPDATE_TIME = 5 * 60
 
-IPS_MIN_NUM = 200
+IPS_MIN_NUM = 150
 
 TEST_URL = 'https://www.baidu.com/'
 
@@ -26,7 +28,7 @@ LOGGING_FILE = 'ip_proxy.log'
 
 PARSER_LIST = [
         {
-            'urls': ['http://www.66ip.cn/%s.html'% n for n in ['index']+range(2, 5)],
+            'urls': ['http://www.66ip.cn/%s.html'% n for n in ['index']+range(1, 5)],
             'type':'xpath',
             'pattern': ".//*[@id='main']/div/div[1]/table/tr[position()>1]",
             'postion':{'ip': './td[1]', 'port': './td[2]', 'type': './td[4]', 'protocol': ''}
@@ -44,20 +46,13 @@ PARSER_LIST = [
             'postion':{'ip': './td[1]', 'port': './td[2]', 'type': './td[3]', 'protocol': './td[4]'}
         },
         {
-            'urls': ['http://www.kuaidaili.com/free/%s/%s/' % (m, n) for m in ['inha', 'intr', 'outha', 'outtr'] for n in range(1, 10)],
+            'urls': ['http://www.kuaidaili.com/free/%s/%s/' % (m, n) for m in ['inha', 'outha'] for n in range(1, 10)],
             'type':'xpath',
             'pattern': ".//*[@id='list']/table/tbody/tr[position()>0]",
             'postion':{'ip': './td[1]', 'port': './td[2]', 'type': './td[3]', 'protocol': './td[4]'}
         },
         {
-            'urls': ['http://www.cz88.net/proxy/%s' % m for m in ['index.shtml']+['http_%s.shtml' % n for n in range(2, 5)]],
-            'type':'xpath',
-            'pattern':".//*[@id='boxright']/div/ul/li[position()>1]",
-            'postion':{'ip': './div[1]', 'port': './div[2]', 'type': './div[3]', 'protocol': ''}
-
-        },
-        {
-            'urls': ['http://www.ip181.com/daili/%s.html' % n for n in range(1, 5)],
+            'urls': ['http://www.ip181.com/daili/%s.html' % n for n in range(1, 10)],
             'type':'xpath',
             'pattern': "/html/body/div[2]/div/div[2]/div/div[3]/table/tbody/tr[position()>1]",
             'postion': {'ip': './td[1]', 'port': './td[2]', 'type': './td[3]', 'protocol': './td[4]'}
@@ -68,7 +63,19 @@ PARSER_LIST = [
             'type':'xpath',
             'pattern': ".//*[@id='ip_list']/tr[position()>1]",
             'postion': {'ip': './td[2]', 'port': './td[3]', 'type': './td[5]', 'protocol': './td[6]'}
-        }
+        },
+        {
+            'urls': ['http://ip84.com/%s/%s' % (m, n) for m in ('gn', 'pn') for n in range(1, 10)],
+            'type':'xpath',
+            'pattern': ".//*[@id='content']/div[1]/table/tr[position()>1]",
+            'postion': {'ip': './td[1]', 'port': './td[2]', 'type': './td[4]', 'protocol': './td[5]'}
+        },
+        {
+            'urls': ['http://www.nianshao.me/?stype=2&page=%s' % n for n in range(1, 50)],
+            'type': 'xpath',
+            'pattern': ".//*[@class='table']/tbody/tr[position()>1]",
+            'postion': {'ip': './td[1]', 'port': './td[2]', 'type': './td[4]', 'protocol': './td[5]'}
+        },
         ]
 
 USER_AGENTS = [

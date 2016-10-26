@@ -2,8 +2,8 @@
 import random
 import requests
 import logging
+
 from lxml import etree
-from requests.exceptions import RequestException
 from config import HEADER, CRAWL_TIMEOUT
 from models import IpProxies
 
