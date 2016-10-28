@@ -1,5 +1,7 @@
 # coding:utf-8
+import json
 import time
+import operator
 import logging
 import config
 
@@ -76,17 +78,43 @@ class IPProxy(object):
                 ip_proxies.extend(items)
         return ip_proxies
 
-    def get_proxy(self, count=None):
+    def get_proxy(self, count=None, in_detail=False):
         proxies = []
         proxy_objs = IpProxies.objects.all()
-        if config.DEGUG:
+        if in_detail:
             for proxy_obj in proxy_objs:
-                proxies.append(proxy_obj.to_json())
+                proxy_json = json.loads(proxy_obj.to_json())
+                proxies.append(proxy_json)
         else:
             for proxy_obj in proxy_objs:
                 ip_addr = '{ip}:{port}'.format(ip=proxy_obj['ip'], port=proxy_obj['port'])
                 proxies.append(ip_addr)
         return proxies[:count]
+
+    def ip_rank(self, count=None):
+        '''当前根据成功率单一指标进行ip排名
+        当times<5, 不进入ip排名
+        times>=5. 取最后10次的数据求平均值
+
+        TODO: 评估指标: 成功率, 平均数据, ip速度的稳定性
+        '''
+        FAIL_PLACEHOLDER = 0
+        proxies = self.get_proxy(in_detail=True)
+        pre_proxies = []
+        for proxy in proxies:
+            speeds = proxy['speeds']
+            speeds_len = len(speeds)
+            if speeds_len > 5:
+                success_count = 0
+                for speed in speeds:
+                    if speed != FAIL_PLACEHOLDER:
+                        success_count += 1
+                success_rate = float(success_count) / speeds_len
+                ip_addr = '{ip}:{port}'.format(ip=proxy['ip'], port=proxy['port'])
+                pre_proxies.append((ip_addr, success_rate))
+        pre_proxies.sort(key=operator.itemgetter(1))
+        sort_proxies = pre_proxies.reverse()[:count]
+        return sort_proxies
 
 
 def main():

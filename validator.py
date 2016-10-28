@@ -130,7 +130,9 @@ class Validator(object):
         speeds = ip_obj['speeds']
 
         try:
-            IpProxies.objects.get(ip=ip)
+            ip_obj = IpProxies.objects.get(ip=ip)
+            if len(speeds) == 1:
+                speeds.extend(ip_obj['speeds'])
             self.update_speeds(ip, speeds)
         except DoesNotExist:
             try:
