@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 """
 Django settings for src project.
 
@@ -11,6 +12,10 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 """
 
 import os
+
+import mongoengine
+from mongoengine import connection
+
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -118,3 +123,30 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
 
 STATIC_URL = '/static/'
+
+
+# Redis address
+REDIS_ADDR = 'redis://localhost:6379'
+# 内网服务器地址
+REDIS_HOST = 'localhost'
+REDIS_PORT = 6379
+
+CACHES = {
+    'default': {
+        'BACKEND': 'redis_cache.cache.RedisCache',
+        'LOCATION': REDIS_ADDR,
+        "OPTIONS": {
+            "CLIENT_CLASS": "redis_cache.client.DefaultClient",
+        },
+    },
+}
+
+# Connect MongoDB
+MONGODBS = ['material']
+MONGO_HOST = 'localhost'
+MONGO_PORT = 27017
+
+for name in MONGODBS:
+    if name not in connection._connections:
+        mongoengine.register_connection(alias=name, name=name,
+                                        host=MONGO_HOST, port=MONGO_PORT)
