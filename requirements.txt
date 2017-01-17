@@ -1,0 +1,10 @@
+Django==1.10.5
+django-redis-cache==1.7.1
+gevent==1.2.1
+greenlet==0.4.11
+lxml==3.7.2
+mongoengine==0.11.0
+pymongo==3.4.0
+redis==2.10.5
+requests==2.12.4
+six==1.10.0
