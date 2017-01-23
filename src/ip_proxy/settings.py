@@ -9,6 +9,7 @@ DEGUG = False
 CRAWL_PROCESS_NUM = multiprocessing.cpu_count()
 CRAWL_THREAD_NUM = 20
 CRAWL_TIMEOUT = 10
+MAX_RETRY_TIMES = 5
 
 # 配置验证IP流程
 VALIDATE_PROCESS_NUM = multiprocessing.cpu_count()
@@ -19,19 +20,19 @@ FAIL_RATE_LIMIT = 0.5
 ON_FAIL_RATE_TIMES = 10
 
 
-UPDATE_TIME = 5 * 60
+UPDATE_TIME = 20
 
-IPS_MIN_NUM = 150
+IPS_MIN_NUM = 500
 
 TEST_URL = 'https://www.baidu.com/'
 
 
 PARSER_LIST = [
         {
-            'urls': ['http://www.66ip.cn/%s.html'% n for n in ['index']+range(1, 5)],
+            'urls': ['http://www.66ip.cn/%s.html'% n for n in range(1, 50)],
             'type':'xpath',
             'pattern': ".//*[@id='main']/div/div[1]/table/tr[position()>1]",
-            'postion':{'ip': './td[1]', 'port': './td[2]', 'type': './td[4]', 'protocol': ''}
+            'position':{'ip': './td[1]', 'port': './td[2]', 'type': './td[4]', 'protocol': ''}
         },
         {
             'urls': ['http://www.66ip.cn/areaindex_%s/%s.html' % (m, n) for m in range(1, 35) for n in range(1, 5)],

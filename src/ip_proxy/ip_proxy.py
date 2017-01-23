@@ -6,7 +6,7 @@ import settings
 
 from mongoengine import connect
 from gevent.pool import Pool
-from settings import PARSER_LIST, LOGGING
+from settings import PARSER_LIST, LOGGING, CRAWL_THREAD_NUM
 from models import IpProxies
 from crawl import Crawl
 from validator import Validator
@@ -17,7 +17,7 @@ class IPProxy(object):
         self.config_logging()
         self.connect_mongodb()
         self.validator = Validator()
-        self.crawl_pool = Pool(settings.CRAWL_THREAD_NUM)
+        self.crawl_pool = Pool(CRAWL_THREAD_NUM)
         self.logger = logging.getLogger(__name__)
 
     @staticmethod
