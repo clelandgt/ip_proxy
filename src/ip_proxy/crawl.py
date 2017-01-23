@@ -4,7 +4,7 @@ import requests
 import logging
 
 from lxml import etree
-from config import HEADER, CRAWL_TIMEOUT
+from settings import HEADER, CRAWL_TIMEOUT
 from models import IpProxies
 
 

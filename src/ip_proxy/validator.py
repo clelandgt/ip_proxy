@@ -2,7 +2,7 @@
 import time
 import requests
 import logging
-import config
+import settings
 import multiprocessing
 
 from mongoengine import NotUniqueError, DoesNotExist
@@ -11,8 +11,8 @@ from gevent.pool import Pool
 monkey.patch_all()
 from requests.exceptions import RequestException
 from models import IpProxies
-from config import (HEADER, TEST_URL, VALIDATE_TIMEOUT, CONT_FAIL_TIMES, \
-    FAIL_RATE_LIMIT, ON_FAIL_RATE_TIMES)
+from settings import (HEADER, TEST_URL, VALIDATE_TIMEOUT, CONT_FAIL_TIMES, \
+                      FAIL_RATE_LIMIT, ON_FAIL_RATE_TIMES)
 
 
 FAIL_PLACEHOLDER = 0
@@ -20,9 +20,9 @@ FAIL_PLACEHOLDER = 0
 
 class Validator(object):
     def __init__(self):
-        self.process_num = config.VALIDATE_PROCESS_NUM
-        self.thread_num = config.VALIDATE_THREAD_NUM
-        self.timeout = config.VALIDATE_TIMEOUT
+        self.process_num = settings.VALIDATE_PROCESS_NUM
+        self.thread_num = settings.VALIDATE_THREAD_NUM
+        self.timeout = settings.VALIDATE_TIMEOUT
         self.request = requests.Session()
         self.request.adapters.DEFAULT_RETRIES = 5
         self.request.headers.update(HEADER)

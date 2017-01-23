@@ -1,11 +1,12 @@
 # coding:utf-8
 import time
 import logging
-import config
+import logging.config
+import settings
 
 from mongoengine import connect
 from gevent.pool import Pool
-from config import PARSER_LIST
+from settings import PARSER_LIST, LOGGING
 from models import IpProxies
 from crawl import Crawl
 from validator import Validator
@@ -13,23 +14,19 @@ from validator import Validator
 
 class IPProxy(object):
     def __init__(self):
-        self.connect_mongodb()
         self.config_logging()
+        self.connect_mongodb()
         self.validator = Validator()
-        self.crawl_pool = Pool(config.CRAWL_THREAD_NUM)
+        self.crawl_pool = Pool(settings.CRAWL_THREAD_NUM)
         self.logger = logging.getLogger(__name__)
 
-    def connect_mongodb(self):
+    @staticmethod
+    def connect_mongodb():
         connect(host='mongodb://localhost:27017/material', alias='material')
 
-    def config_logging(self):
-        logging.basicConfig(filename=config.LOGGING_FILE, level=logging.DEBUG,
-                            format='%(asctime)s %(levelname)s \n\t\t%(message)s',
-                            datefmt='%Y.%m.%d  %H:%M:%S')
-        console = logging.StreamHandler()
-        console.setLevel(logging.INFO)
-        self.logger = logging.getLogger(__name__)
-        self.logger.addHandler(console)
+    @staticmethod
+    def config_logging():
+        logging.config.dictConfig(LOGGING)
 
     def run(self):
         while True:
@@ -37,13 +34,13 @@ class IPProxy(object):
                 proxies = IpProxies.objects.all()
                 self.validate(proxies)
                 proxies = IpProxies.objects.all()
-                if proxies.count() < config.IPS_MIN_NUM:
+                if proxies.count() < settings.IPS_MIN_NUM:
                     new_proxies = self.crawl()
                     if not new_proxies:
                         new_proxies = []
                     self.logger.info('crawl {0} ips \n'.format(len(new_proxies)))
                     self.validate(new_proxies)
-                time.sleep(config.UPDATE_TIME)
+                time.sleep(settings.UPDATE_TIME)
             except Exception as e:
                 self.logger.error(str(e))
 

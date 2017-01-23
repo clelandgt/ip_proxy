@@ -1,4 +1,5 @@
 # coding:utf-8
+import os
 import random
 import multiprocessing
 
@@ -24,7 +25,6 @@ IPS_MIN_NUM = 150
 
 TEST_URL = 'https://www.baidu.com/'
 
-LOGGING_FILE = 'ip_proxy.log'
 
 PARSER_LIST = [
         {
@@ -121,4 +121,33 @@ HEADER = {
     'Accept-Language': 'en-US,en;q=0.5',
     'Connection': 'keep-alive',
     'Accept-Encoding': 'gzip, deflate',
+}
+
+
+# logging configure file
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "basic": {
+            "format": "%(levelname)s - %(asctime)s - %(module)s - %(message)s"
+        }
+
+    },
+
+    "handlers": {
+        "info_file_handler": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "level": "INFO",
+            "formatter": "basic",
+            "filename": os.path.join(BASE_DIR, "ip_proxy.log"),
+            "encoding": "utf8"
+        },
+    },
+
+    "root": {
+        "level": "INFO",
+        "handlers": ["info_file_handler"]
+    }
 }
