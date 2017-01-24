@@ -1,5 +1,4 @@
 # coding:utf-8
-import random
 import requests
 import logging
 
@@ -17,12 +16,9 @@ class Crawl(object):
         self.request.adapters.DEFAULT_RETRIES = 5
         self.logger = logging.getLogger(__name__)
 
-    def run(self, url, parser):
+    def crawling(self, url, parser):
         resp = self.download(url)
-        try:
-            return self.parse(resp, parser)
-        except Exception as e:
-            self.logger.error(str(e))
+        self.parse(resp, parser)
 
     def download(self, url):
         count = 0
@@ -44,7 +40,8 @@ class Crawl(object):
                 count += 1
                 self.logger.exception(e)
 
-    def parse(self, document, parser):
+    @staticmethod
+    def parse(document, parser):
         if parser['type'] != 'xpath':
             raise ValueError('type of parser is {0}, not xpath'.format(parser['type']))
         proxies = []
@@ -59,22 +56,13 @@ class Crawl(object):
                 ip_type = '高匿'
             else:
                 ip_type = '匿名'
-            if parser['position']['protocol'] != '':
-                protocol = position.xpath(parser['position']['protocol'])[0].text
-                if protocol.lower().find('https') == -1:
-                    protocol = 'HTTPS'
-                else:
-                    protocol = 'HTTP'
-            else:
-                protocol = 'HTTP'
-
-            proxy = {'ip': ip, 'port': int(port), 'ip_type': ip_type, 'protocol': protocol, 'speeds': []}
+            proxy = {'ip': ip, 'port': int(port), 'ip_type': ip_type, 'protocol': '', 'speeds': []}
             proxies.append(proxy)
         return proxies
 
     def get_proxy(self):
         if len(self.proxies) == 0:
-            proxies = random.choice(IpProxies.objects.all()).get_proxies()
+            proxies = IpProxies.objects.all()
             proxies = ranking(proxies)
             for proxy in proxies:
                 self.proxies.append({
