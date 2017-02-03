@@ -16,9 +16,9 @@ class Crawl(object):
         self.request.adapters.DEFAULT_RETRIES = 5
         self.logger = logging.getLogger(__name__)
 
-    def crawling(self, url, parser):
+    def run(self, url, parser):
         resp = self.download(url)
-        self.parse(resp, parser)
+        return self.parse(resp, parser)
 
     def download(self, url):
         count = 0

@@ -80,14 +80,14 @@ class Validator(object):
             self.logger.info('success ip = {ip}, port = {port}, speed = {speed}\n'.format(ip=ip, port=port, speed=speed))
 
     def handle_request_error(self, ip_obj):
-        '''处理验证失败的代理ip
+        """处理验证失败的代理ip
             爬取的ip直接返回.
             数据库里的ip验证淘汰规则(失败的ip,speed=99):
                 1. 失败数: 连续验证失败3次的IP直接上删除淘汰.
                 2. 失败率: ip验证次数超过10次时,开启失败率淘汰(当失败率>50%时,直接淘汰删除)
         :param ip_obj:
         :return:
-        '''
+        """
         if not ip_obj:
             return
         ip = ip_obj['ip']
