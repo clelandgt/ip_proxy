@@ -40,7 +40,7 @@ class IPProxy(object):
                     self.validate(new_proxies)
                 time.sleep(settings.UPDATE_TIME)
             except Exception as e:
-                self.logger.error(e)
+                self.logger.exception(e)
 
     def validate(self, proxies):
         proxies_len = len(proxies)

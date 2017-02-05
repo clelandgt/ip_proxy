@@ -42,7 +42,7 @@ def cocurrent(func, items, process_num, coroutine_num):
 
     results = []
     for process in processes:
-        result = process.get()
+        result = queue.get()
         results.extend(result)
     return results
 

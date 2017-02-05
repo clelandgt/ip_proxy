@@ -20,7 +20,7 @@ FAIL_RATE_LIMIT = 0.5
 ON_FAIL_RATE_TIMES = 10
 
 
-UPDATE_TIME = 2 * 60  # 每两分钟验证一轮数据库中的IP
+UPDATE_TIME = 10  # 每两分钟验证一轮数据库中的IP
 
 IPS_MIN_NUM = 100
 

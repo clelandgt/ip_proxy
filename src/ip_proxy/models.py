@@ -6,12 +6,12 @@ from mongoengine import IntField, StringField, DateTimeField, FloatField, ListFi
 
 class IpProxies(Document):
     TYPE_CHOICES = (u'高匿', u'匿名')
-    PRO_CHOICES = ('HTTP', 'HTTPS')
+    PRO_CHOICES = ('http', 'https')
 
     ip = StringField(required=True, unique=True)
-    port = IntField(required=True,)
+    port = IntField(required=True)
     ip_type = StringField(choices=TYPE_CHOICES, default=u'匿名')
-    protocol = StringField(choices=PRO_CHOICES, default='HTTP')
+    protocol = StringField(choices=PRO_CHOICES, default='http')
     speeds = ListField(FloatField())
     creation_date = DateTimeField()
     update_date = DateTimeField()
