@@ -1,4 +1,10 @@
 # coding:utf-8
+import multiprocessing
+
+from multiprocessing import Queue
+from gevent import monkey
+from gevent.pool import Pool
+monkey.patch_all()
 
 
 def ranking(proxies, count=None):
@@ -21,3 +27,32 @@ def ranking(proxies, count=None):
         items.append((ip_addr, success_rate))
     proxies = sorted(items, key=lambda item: item[1], reverse=True)
     return proxies[:count]
+
+
+def cocurrent(func, items, process_num, coroutine_num):
+    queue = Queue()
+    pieces = average_cut_list(items, process_num)
+    processes = []
+    for piece in pieces:
+        process = multiprocessing.Process(target=process_with_coroutine, args=(func, piece, queue, coroutine_num))
+        process.start()
+        processes.append(process)
+    for process in processes:
+        process.join()
+
+    results = []
+    for process in processes:
+        result = queue.get()
+        results.extend(result)
+    return results
+
+
+def process_with_coroutine(func, piece, queue, coroutine_num):
+    validate_pool = Pool(coroutine_num)
+    result = validate_pool.map(func, piece)
+    queue.put(result)
+
+
+def average_cut_list(source_list, count):
+    func = lambda A, n: [A[i:i + n] for i in range(0, len(A), n)]
+    return func(source_list, count)
