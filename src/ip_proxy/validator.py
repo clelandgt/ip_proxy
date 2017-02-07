@@ -37,10 +37,10 @@ class Validator(object):
             speed = round(time.time() - start, 2)
             ip_obj['speeds'].append(speed)
             self.store_into_db(ip_obj)
-            self.logger.info('success ip = {ip}, port = {port}, speed = {speed}\n'.format(ip=ip, port=port, speed=speed))
+            self.logger.info('success ip={ip}, port={port}, speed={speed}\n'.format(ip=ip, port=port, speed=speed))
         except RequestException:
             self.handle_request_error(ip_obj)
-            self.logger.warning('fail ip = {0}\n'.format(ip))
+            self.logger.warning('fail ip={}\n'.format(ip))
 
     def handle_request_error(self, ip_obj):
         """处理验证失败的代理ip
@@ -84,8 +84,8 @@ class Validator(object):
         ip, port, ip_type, protocol, speeds = ip_obj['ip'], ip_obj['port'], ip_obj['ip_type'], ip_obj['protocol'], ip_obj['speeds']
         try:
             obj = IpProxies.objects.get(ip=ip)
-            # if len(speeds) == 1:
-            #     speeds.extend(ip_obj['speeds'])
+            if len(speeds) == 1:
+                speeds.extend(obj['speeds'])
             obj.update(port=port, ip_type=ip_type, protocol=protocol, speeds=speeds)
         except DoesNotExist:
             IpProxies(ip=ip, port=port, ip_type=ip_type, protocol=protocol, speeds=speeds).save()

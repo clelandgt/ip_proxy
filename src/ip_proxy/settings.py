@@ -3,12 +3,12 @@ import os
 import random
 import multiprocessing
 
-DEGUG = False
 
 # 配置爬取IP流程
 CRAWL_THREAD_NUM = 20
 CRAWL_TIMEOUT = 10
 MAX_RETRY_TIMES = 5
+
 
 # 配置验证IP流程
 VALIDATE_PROCESS_NUM = multiprocessing.cpu_count()
@@ -20,8 +20,8 @@ ON_FAIL_RATE_TIMES = 10
 
 
 UPDATE_TIME = 10  # 每两分钟验证一轮数据库中的IP
-
 IPS_MIN_NUM = 100
+
 
 TEST_URL = 'https://www.baidu.com/'
 
@@ -33,50 +33,51 @@ PARSER_LIST = [
             'pattern': ".//*[@id='main']/div/div[1]/table/tr[position()>1]",
             'position':{'ip': './td[1]', 'port': './td[2]', 'type': './td[4]'}
         },
-        {
-            'urls': ['http://www.66ip.cn/areaindex_%s/%s.html' % (m, n) for m in range(1, 35) for n in range(1, 5)],
-            'type':'xpath',
-            'pattern': ".//*[@id='footer']/div/table/tr[position()>1]",
-            'position':{'ip': './td[1]', 'port': './td[2]', 'type': './td[4]'}
-        },
-        {
-            'urls': ['http://www.kuaidaili.com/proxylist/%s/' % n for n in range(1, 10)],
-            'type': 'xpath',
-            'pattern': ".//*[@id='index_free_list']/table/tbody/tr[position()>0]",
-            'position':{'ip': './td[1]', 'port': './td[2]', 'type': './td[3]'}
-        },
-        {
-            'urls': ['http://www.kuaidaili.com/free/%s/%s/' % (m, n) for m in ['inha', 'outha'] for n in range(1, 10)],
-            'type':'xpath',
-            'pattern': ".//*[@id='list']/table/tbody/tr[position()>0]",
-            'position':{'ip': './td[1]', 'port': './td[2]', 'type': './td[3]'}
-        },
-        {
-            'urls': ['http://www.ip181.com/daili/%s.html' % n for n in range(1, 10)],
-            'type':'xpath',
-            'pattern': "/html/body/div[2]/div/div[2]/div/div[3]/table/tbody/tr[position()>1]",
-            'position': {'ip': './td[1]', 'port': './td[2]', 'type': './td[3]'}
-
-        },
-        {
-            'urls': ['http://www.xicidaili.com/nn/%s' % n for n in range(1, 5)],
-            'type':'xpath',
-            'pattern': ".//*[@id='ip_list']/tr[position()>1]",
-            'position': {'ip': './td[2]', 'port': './td[3]', 'type': './td[5]'}
-        },
-        {
-            'urls': ['http://ip84.com/%s/%s' % (m, n) for m in ('gn', 'pn') for n in range(1, 10)],
-            'type':'xpath',
-            'pattern': ".//*[@id='content']/div[1]/table/tr[position()>1]",
-            'position': {'ip': './td[1]', 'port': './td[2]', 'type': './td[4]'}
-        },
-        {
-            'urls': ['http://www.nianshao.me/?stype=2&page=%s' % n for n in range(1, 50)],
-            'type': 'xpath',
-            'pattern': ".//*[@class='table']/tbody/tr[position()>1]",
-            'position': {'ip': './td[1]', 'port': './td[2]', 'type': './td[4]'}
-        },
+        # {
+        #     'urls': ['http://www.66ip.cn/areaindex_%s/%s.html' % (m, n) for m in range(1, 35) for n in range(1, 5)],
+        #     'type':'xpath',
+        #     'pattern': ".//*[@id='footer']/div/table/tr[position()>1]",
+        #     'position':{'ip': './td[1]', 'port': './td[2]', 'type': './td[4]'}
+        # },
+        # {
+        #     'urls': ['http://www.kuaidaili.com/proxylist/%s/' % n for n in range(1, 10)],
+        #     'type': 'xpath',
+        #     'pattern': ".//*[@id='index_free_list']/table/tbody/tr[position()>0]",
+        #     'position':{'ip': './td[1]', 'port': './td[2]', 'type': './td[3]'}
+        # },
+        # {
+        #     'urls': ['http://www.kuaidaili.com/free/%s/%s/' % (m, n) for m in ['inha', 'outha'] for n in range(1, 10)],
+        #     'type':'xpath',
+        #     'pattern': ".//*[@id='list']/table/tbody/tr[position()>0]",
+        #     'position':{'ip': './td[1]', 'port': './td[2]', 'type': './td[3]'}
+        # },
+        # {
+        #     'urls': ['http://www.ip181.com/daili/%s.html' % n for n in range(1, 10)],
+        #     'type':'xpath',
+        #     'pattern': "/html/body/div[2]/div/div[2]/div/div[3]/table/tbody/tr[position()>1]",
+        #     'position': {'ip': './td[1]', 'port': './td[2]', 'type': './td[3]'}
+        #
+        # },
+        # {
+        #     'urls': ['http://www.xicidaili.com/nn/%s' % n for n in range(1, 5)],
+        #     'type':'xpath',
+        #     'pattern': ".//*[@id='ip_list']/tr[position()>1]",
+        #     'position': {'ip': './td[2]', 'port': './td[3]', 'type': './td[5]'}
+        # },
+        # {
+        #     'urls': ['http://ip84.com/%s/%s' % (m, n) for m in ('gn', 'pn') for n in range(1, 10)],
+        #     'type':'xpath',
+        #     'pattern': ".//*[@id='content']/div[1]/table/tr[position()>1]",
+        #     'position': {'ip': './td[1]', 'port': './td[2]', 'type': './td[4]'}
+        # },
+        # {
+        #     'urls': ['http://www.nianshao.me/?stype=2&page=%s' % n for n in range(1, 50)],
+        #     'type': 'xpath',
+        #     'pattern': ".//*[@class='table']/tbody/tr[position()>1]",
+        #     'position': {'ip': './td[1]', 'port': './td[2]', 'type': './td[4]'}
+        # },
         ]
+
 
 USER_AGENTS = [
     "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; AcooBrowser; .NET CLR 1.1.4322; .NET CLR 2.0.50727)",
@@ -115,6 +116,7 @@ USER_AGENTS = [
     "Mozilla/5.0 (X11; U; Linux x86_64; zh-CN; rv:1.9.2.10) Gecko/20100922 Ubuntu/10.10 (maverick) Firefox/3.6.10"
 ]
 
+
 HEADER = {
     'User-Agent': random.choice(USER_AGENTS),
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
@@ -133,9 +135,7 @@ LOGGING = {
         "basic": {
             "format": "%(levelname)s - %(asctime)s - %(module)s - %(message)s"
         }
-
     },
-
     "handlers": {
         "info_file_handler": {
             "class": "logging.handlers.RotatingFileHandler",
@@ -145,7 +145,6 @@ LOGGING = {
             "encoding": "utf8"
         },
     },
-
     "root": {
         "level": "INFO",
         "handlers": ["info_file_handler"]
