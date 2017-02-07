@@ -54,13 +54,19 @@ class Validator(object):
         ip_obj['speeds'].append(FAIL_PLACEHOLDER)
         ip, speeds = ip_obj['ip'], ip_obj['speeds']
         speeds_len = len(speeds)
+        if speeds_len == 1:
+            return
         # 失败数
-        last_speeds = speeds[(0-CONT_FAIL_TIMES):]
+        is_cont_fail = True
+        last_speeds = speeds[(0 - CONT_FAIL_TIMES):]
         for speed in last_speeds:
             if speed != FAIL_PLACEHOLDER:
-                self.delete_ip_from_db(ip)
-                self.logger.info('ip {ip} continuous fail times arrive limit, {count} times.'.format(ip=ip, count=CONT_FAIL_TIMES))
-                return
+                is_cont_fail = False
+                break
+        if is_cont_fail:
+            self.logger.info('ip {ip} continue fail {count} times arrive limit.'.format(ip=ip, count=CONT_FAIL_TIMES))
+            self.delete_ip_from_db(ip)
+            return
         # 失败率
         if speeds_len >= ON_FAIL_RATE_TIMES:
             fail_count = 0
@@ -78,16 +84,18 @@ class Validator(object):
         ip, port, ip_type, protocol, speeds = ip_obj['ip'], ip_obj['port'], ip_obj['ip_type'], ip_obj['protocol'], ip_obj['speeds']
         try:
             obj = IpProxies.objects.get(ip=ip)
+            # if len(speeds) == 1:
+            #     speeds.extend(ip_obj['speeds'])
             obj.update(port=port, ip_type=ip_type, protocol=protocol, speeds=speeds)
         except DoesNotExist:
             IpProxies(ip=ip, port=port, ip_type=ip_type, protocol=protocol, speeds=speeds).save()
 
-    def update_speeds(self, ip, speeds):
+    @staticmethod
+    def update_speeds(ip, speeds):
         try:
             ip_obj = IpProxies.objects.get(ip=ip)
             ip_obj.update(speeds=speeds)
-        except Exception as e:
-            # self.logger.exception(e)
+        except Exception:
             pass
 
     def delete_ip_from_db(self, ip):
