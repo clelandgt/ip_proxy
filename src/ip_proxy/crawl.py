@@ -22,13 +22,13 @@ class Crawl(object):
             return self.parse(resp, parser)
         except Exception as e:
             self.logger.exception(e)
+            return []
 
     def download(self, url):
         for index in xrange(1, MAX_RETRY_TIMES+1):
             try:
-                if index == 1:
-                    resp = self.request.get(url=url, timeout=CRAWL_TIMEOUT)
-                else:
+                resp = self.request.get(url=url, timeout=CRAWL_TIMEOUT)
+                if index != 1:
                     proxy = self.get_proxy()
                     resp = self.request.get(url=url, timeout=CRAWL_TIMEOUT, proxies=proxy)
                 if not resp.ok:
@@ -36,9 +36,10 @@ class Crawl(object):
                 self.logger.info('connect url {} success.'.format(url))
                 return resp.text
             except Exception as e:
-                self.logger.exception(e)
+                self.logger.error(e)
                 if index == MAX_RETRY_TIMES:
                     self.logger.error('retry connect url {0} {1} times, but is failed.'.format(url, MAX_RETRY_TIMES))
+                    raise e
 
     @staticmethod
     def parse(document, parser):

@@ -34,7 +34,6 @@ class IPProxy(object):
                 proxies = IpProxies.objects.all()
                 if proxies.count() < settings.IPS_MIN_NUM:
                     new_proxies = self.crawl()
-                    self.logger.info('crawl {0} ips'.format(len(new_proxies)))
                     self.validate(new_proxies)
                 time.sleep(settings.UPDATE_TIME)
             except Exception as e:
@@ -58,7 +57,8 @@ class IPProxy(object):
                 self.logger.info('crawling {0}'.format(url))
                 result = crawl.run(url, parser)
                 proxies.extend(result)
-        self.logger.info('crawl end -------')
+        self.logger.info('crawl end -------\n'
+                         'crawl {0} ips'.format(len(proxies)))
         return proxies
 
 
