@@ -14,6 +14,7 @@ def ranking(proxies, count=None):
 
     TODO: 评估指标: 成功率, 平均数据, ip速度的稳定性
     """
+    if not proxies: return []
     failed_flag = 0
     items = []
     for proxy in proxies:
@@ -41,7 +42,7 @@ def cocurrent(func, items, process_num, coroutine_num):
         process.join()
 
     results = []
-    for process in processes:
+    for _ in processes:
         result = queue.get()
         results.extend(result)
     return results
