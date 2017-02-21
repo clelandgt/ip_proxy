@@ -21,8 +21,7 @@ def ip_proxy(request):
     data = request.POST
     try:
         count = int(data['count'])
-    except Exception as e:
-        # TODO: logging exception
+    except:
         return u'请求失败'
     proxies = get_proxy()
     return proxies[:count]

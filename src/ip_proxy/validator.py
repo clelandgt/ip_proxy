@@ -26,7 +26,7 @@ class Validator(object):
 
     def validate(self, ip_obj):
         ip, port = ip_obj['ip'], ip_obj['port']
-        ip_obj['protocol'] = 'http'
+        ip_obj['protocol'] = 'https'
         ip_addr = '{ip}:{port}'.format(ip=ip, port=port)
         proxies = {'https': 'https://{}'.format(ip_addr)}
         start = time.time()
@@ -40,7 +40,6 @@ class Validator(object):
             self.logger.info('success ip={ip}, port={port}, speed={speed}\n'.format(ip=ip, port=port, speed=speed))
         except RequestException:
             self.handle_request_error(ip_obj)
-            self.logger.warning('fail ip={}\n'.format(ip))
 
     def handle_request_error(self, ip_obj):
         """处理验证失败的代理ip
@@ -53,31 +52,24 @@ class Validator(object):
         """
         ip_obj['speeds'].append(FAIL_PLACEHOLDER)
         ip, speeds = ip_obj['ip'], ip_obj['speeds']
+        self.logger.warning('fail ip={}\n'.format(ip))
         speeds_len = len(speeds)
-        if speeds_len == 1:
-            return
-        # 失败数
-        is_cont_fail = True
-        last_speeds = speeds[(0 - CONT_FAIL_TIMES):]
-        for speed in last_speeds:
-            if speed != FAIL_PLACEHOLDER:
-                is_cont_fail = False
-                break
-        if is_cont_fail:
-            self.logger.info('ip {ip} continue fail {count} times arrive limit.'.format(ip=ip, count=CONT_FAIL_TIMES))
-            self.delete_ip_from_db(ip)
-            return
-        # 失败率
-        if speeds_len >= ON_FAIL_RATE_TIMES:
-            fail_count = 0
-            for speed in speeds:
-                if speed == FAIL_PLACEHOLDER:
-                    fail_count += 1
-            fail_rate = float(fail_count)/speeds_len
-            if fail_rate > FAIL_RATE_LIMIT:
+        if speeds_len >= CONT_FAIL_TIMES:
+            # 失败数
+            last_speeds = speeds[(0 - CONT_FAIL_TIMES):]
+            if len(last_speeds) == last_speeds.count(FAIL_PLACEHOLDER):
+                self.logger.warning('ip {ip} continue fail {count} times arrive limit.'.format(ip=ip, count=CONT_FAIL_TIMES))
                 self.delete_ip_from_db(ip)
                 return
-        self.update_speeds(ip, speeds)
+            # 失败率
+            if speeds_len >= ON_FAIL_RATE_TIMES:
+                fail_count = speeds.count(FAIL_PLACEHOLDER)
+                fail_rate = float(fail_count)/speeds_len
+                if fail_rate > FAIL_RATE_LIMIT:
+                    self.logger.warning('ip failed rate {} arrive limit.'.format(fail_rate))
+                    self.delete_ip_from_db(ip)
+                    return
+        self.store_into_db(ip_obj)
 
     @staticmethod
     def store_into_db(ip_obj):
@@ -89,14 +81,6 @@ class Validator(object):
             obj.update(port=port, ip_type=ip_type, protocol=protocol, speeds=speeds)
         except DoesNotExist:
             IpProxies(ip=ip, port=port, ip_type=ip_type, protocol=protocol, speeds=speeds).save()
-
-    @staticmethod
-    def update_speeds(ip, speeds):
-        try:
-            ip_obj = IpProxies.objects.get(ip=ip)
-            ip_obj.update(speeds=speeds)
-        except Exception:
-            pass
 
     def delete_ip_from_db(self, ip):
         IpProxies.objects(ip=ip).delete()
