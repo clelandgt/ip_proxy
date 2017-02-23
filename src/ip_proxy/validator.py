@@ -2,11 +2,16 @@
 import time
 import requests
 import logging
+import multiprocessing
+
+from multiprocessing import Queue
+from gevent import monkey
+from gevent.pool import Pool
+monkey.patch_all()
 
 from mongoengine import NotUniqueError, DoesNotExist
 from requests.exceptions import RequestException
 from models import IpProxies
-from utils import cocurrent
 from settings import (HEADER, TEST_URL, VALIDATE_TIMEOUT, VALIDATE_PROCESS_NUM, VALIDATE_THREAD_NUM, CONT_FAIL_TIMES,
                       FAIL_RATE_LIMIT, ON_FAIL_RATE_TIMES)
 
@@ -39,6 +44,7 @@ class Validator(object):
             self.store_into_db(ip_obj)
             self.logger.info('success ip={ip}, port={port}, speed={speed}\n'.format(ip=ip, port=port, speed=speed))
         except RequestException:
+            self.logger.warning('fail ip={}\n'.format(ip))
             self.handle_request_error(ip_obj)
 
     def handle_request_error(self, ip_obj):
@@ -52,7 +58,6 @@ class Validator(object):
         """
         ip_obj['speeds'].append(FAIL_PLACEHOLDER)
         ip, speeds = ip_obj['ip'], ip_obj['speeds']
-        self.logger.warning('fail ip={}\n'.format(ip))
         speeds_len = len(speeds)
         if speeds_len >= CONT_FAIL_TIMES:
             # 失败数
@@ -85,3 +90,32 @@ class Validator(object):
     def delete_ip_from_db(self, ip):
         IpProxies.objects(ip=ip).delete()
         self.logger.warning('delete ip {0} from database'.format(ip))
+
+
+def cocurrent(func, items, process_num, coroutine_num):
+    queue = Queue()
+    pieces = average_cut_list(items, process_num)
+    processes = []
+    for piece in pieces:
+        process = multiprocessing.Process(target=process_with_coroutine, args=(func, piece, queue, coroutine_num))
+        process.start()
+        processes.append(process)
+    for process in processes:
+        process.join()
+
+    results = []
+    for _ in processes:
+        result = queue.get()
+        results.extend(result)
+    return results
+
+
+def process_with_coroutine(func, piece, queue, coroutine_num):
+    validate_pool = Pool(coroutine_num)
+    result = validate_pool.map(func, piece)
+    queue.put(result)
+
+
+def average_cut_list(source_list, count):
+    func = lambda A, n: [A[i:i + n] for i in range(0, len(A), n)]
+    return func(source_list, count)

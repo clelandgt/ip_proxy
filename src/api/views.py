@@ -16,13 +16,14 @@ NEVER_REDIS_TIMEOUT = 60 * 2  # 缓存2分钟更新一次
 @csrf_exempt
 @render_json_only
 def ip_proxy(request):
-    if request.method != 'POST':
-        return HttpResponseForbidden(u'只支持POST请求')
-    data = request.POST
-    try:
-        count = int(data['count'])
-    except:
-        return u'请求失败'
+    if request.method == 'POST':
+        try:
+            data = request.POST
+            count = int(data['count'])
+        except:
+            return u'请求失败'
+    else:
+        count = None
     proxies = get_proxy()
     return proxies[:count]
 
